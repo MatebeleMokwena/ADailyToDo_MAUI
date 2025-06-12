@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyDailyToDo.MainPage"
+             >
+
+    
+    <Grid RowDefinitions="auto,auto,*" ColumnDefinitions="*,*,*">
+       
+        <!--Entry for activity-->
+        <Entry Placeholder="What are you doing today..." PlaceholderColor="Black" TextColor="Black" Grid.ColumnSpan="2" Text="{Binding Activity}"/>
+        
+        <!--Button to add-->
+        <Button Text="Add" Grid.Column="2" Command="{Binding Add}"/>
+        
+        <!--Label to display date-->
+        <Label Text="{Binding Date}" Grid.ColumnSpan="2" Grid.Row="1" />
+        
+        <!--Button the display date to label-->
+        <!--<Button Text="DATE" Grid.Row="1" Grid.Column="2" Command="{Binding DATE}" />-->
+        
+        <!--List-->
+        <ListView ItemsSource="{Binding Items}" Grid.Row="2" Grid.ColumnSpan="3" SelectionMode="None" RowHeight="60">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+
+                                <SwipeItems>
+                                    <SwipeItem
+                                    Text="Delete" BackgroundColor="OrangeRed" 
+                                    Command="{Binding DeleteCommand}"
+                                    />
+                                </SwipeItems>
+
+                            </SwipeView.RightItems>
+
+                            <Grid ColumnDefinitions="Auto, *" >
+                                <!--Passed button-->
+                                <Button Text="✔" Command="{Binding TickCommand}" CommandParameter="{Binding label}" Margin="10" BackgroundColor="Green" Grid.Column="0"/>
+                                
+                                <Label Text="{Binding label}" FontSize="Medium" Grid.Column="1" Margin="5" VerticalOptions="Start"/>
+
+                                <Label Text="{Binding DeadLine}" FontSize="Medium" VerticalOptions="End" Margin="5" Grid.Column="2"/>
+
+                            </Grid>
+
+                        </SwipeView>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+          
+    </Grid>
+
+</ContentPage>

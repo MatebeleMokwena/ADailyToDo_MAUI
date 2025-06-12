@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyDailyToDo.Your_Proggress_Record"
+             Title="Your_Proggress_Record">
+
+
+    
+    <Grid ColumnDefinitions="*,*,*" RowDefinitions="auto,auto,auto" RowSpacing="10" Margin="20" ColumnSpacing="10" >
+        <!--Pass Label-->
+        <Label Text="Completed" FontSize="Medium" />
+        
+        <!--Pass Record-->
+        <!-- <Label Text="{Binding Complete}" Grid.Row="1" /> -->
+        <Button Text="{Binding Complete}" Command="{Binding CompleteB}" Grid.Row="1" BackgroundColor="Green"/>
+
+        <!--Fail Label-->
+        <Label Text="Failed" FontSize="Medium" Grid.Column="1" />
+        <!--Fail Record-->
+        <Button Text="{Binding Failed}" Grid.Row="1" Grid.Column="1" Command="{Binding FailedB}" BackgroundColor="Red"/>
+
+        <!--Cancelled/Delete Label-->
+        <Label Text="Deleted/Cancelled" FontSize="Medium" Grid.Column="2"/>
+        <!--Delete Record-->
+        <Button Text="{Binding Deleted}" Grid.Row="1" Grid.Column="2" Command="{Binding DeletedB}" BackgroundColor="OrangeRed"/>
+
+        <!--Progress Message -->
+        <Label Text="{Binding Message}"  Grid.Row = "2"  Grid.ColumnSpan="3" FontSize="Medium" FontAttributes="Bold"/>
+        
+
+    </Grid>
+    
+    
+</ContentPage>
