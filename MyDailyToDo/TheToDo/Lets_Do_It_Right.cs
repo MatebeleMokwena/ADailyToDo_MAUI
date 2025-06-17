@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
-
+using Newtonsoft.Json;
 
 namespace MyDailyToDo.TheToDo
 {
@@ -8,7 +8,7 @@ namespace MyDailyToDo.TheToDo
     {
         public ObservableCollection<ToDoItems> Items { get; set; } = new();
         private System.Timers.Timer endofday;
-       
+        readonly string savePath = Path.Combine(FileSystem.AppDataDirectory, "progress report.json");
 
         string? activity;
         public string? Activity 
@@ -69,16 +69,18 @@ namespace MyDailyToDo.TheToDo
         }
 
         public Command Add   { get; set; }
-        public Command DATE  { get; set; }
+        //public Command DATE  { get; set; }
 
         public Lets_Do_It_Right()
         {
             Add = new Command(AddExecute);
-            DATE = new Command(DisplayDate);
+            //DATE = new Command(DisplayDate);
             TheDeadLine();
+            LastOpened();
+            LoadProgress();
         }
 
-        public void AddExecute() 
+        public void AddExecute() /////////////////////////////////////////
         {
             /*
             The purpose it has is to take the item in the entry and input it into the list
@@ -92,14 +94,8 @@ namespace MyDailyToDo.TheToDo
 
             }
         }
-        public void DisplayDate() 
-        {
-            /*
-            Will allow you to choose a date where you want a certain task to be complete
-             */
-        }
 
-        public void TheDeadLine()
+        public void TheDeadLine()///////////////////////////////////////
         {
             DateTime now = DateTime.Now;
             DateTime scheduledTime = new DateTime(now.Year, now.Month, now.Day, 0, 1, 0);
@@ -117,12 +113,25 @@ namespace MyDailyToDo.TheToDo
             endofday.Elapsed += OnDeadLine;
             endofday.Start();
         }
+        public void SaveProgress()//////////////////////////////////////
+        {
+            var data = new ProgressData
+            {
+                Complete = Complete,
+                Failed = Failed,
+                Deleted = Deleted
+            };
 
-        private void OnDeadLine(object? sender, System.Timers.ElapsedEventArgs e)
+            string json = JsonConvert.SerializeObject(data);
+            File.WriteAllText(savePath, json);
+        }
+      
+        private void OnDeadLine(object? sender, System.Timers.ElapsedEventArgs e)////////////////////////////////////////
         {
             List<int> indexes = [];
             for (int i = 0; i < Items.Count; i++)
             {
+               
                 if (!Items[i].isComplete)
                 {
                     Items[i].isFailed = true;
@@ -133,11 +142,11 @@ namespace MyDailyToDo.TheToDo
                 }
                 indexes.Add(i);
 
+                
             }
 
             App.Current!.Dispatcher.Dispatch(() =>
             {
-
 
                 for (int i = indexes.Count - 1; i >= 0; i--)
                 {
@@ -150,21 +159,40 @@ namespace MyDailyToDo.TheToDo
                     Items.RemoveAt(idx);
                 }
             });
-
+            
+            SaveProgress();
             TheDeadLine();
+        }
+
+        public void LastOpened() ////////////////////////////////////////////
+        {
+            //Will check when the app was last opened then compile the outstanding activities and do necessary incrementaion
+        }
+
+        public void LoadProgress()/////////////////////////////////
+        {
+            if (File.Exists(savePath))
+            {
+                string json = File.ReadAllText(savePath);
+                var data = JsonConvert.DeserializeObject<ProgressData>(json);
+
+                Complete = data?.Complete ?? 0;
+                Failed = data?.Failed ?? 0;
+                Deleted = data?.Deleted ?? 0;
+            }
         }
     }
 
     public class ToDoItems 
     {
-        
+  
          public string? label { get; set; }
          public DateTime DeadLine { get; set; }
          public Command TickCommand { get; set; }
          //public Command CrossCommand { get; set; }
          public Command DeleteCommand { get; set; }
-        public bool isFailed { get; set; } = false;
-        public bool isComplete { get; set; } = false;
+         public bool isFailed { get; set; } = true;
+         public bool isComplete { get; set; } = false;
 
 
 
@@ -183,25 +211,16 @@ namespace MyDailyToDo.TheToDo
         {
             isComplete = true;
             isFailed = false;
-            if (!isFailed) 
+            if (!isFailed)
             {
                 App.LDIR_VM!.Complete++;
             }
             //  then it will increment by 1 on the Yourproggress report where the button is 
-            
+
             // Will the function of scratching the text/item in the list and placing it at the bottom
 
 
         }
-
-        //public void CrossCommandExecute()
-        //{
-        //    //  then it will increment by 1 on the Yourproggress report where the button is 
-        //    App.LDIR_VM!.Failed++;
-        //    // Will the function of scratching the text/item in the list and placing it at the bottom
-
-
-        //}
       
         public void DeleteCommandExecute() 
         {
@@ -210,5 +229,12 @@ namespace MyDailyToDo.TheToDo
 
         }
 
+    }
+
+    public class ProgressData
+    {
+        public int? Complete { get; set; }
+        public int? Failed { get; set; }
+        public int? Deleted { get; set; }
     }
 }
