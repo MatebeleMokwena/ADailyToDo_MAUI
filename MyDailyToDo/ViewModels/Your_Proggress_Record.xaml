@@ -12,17 +12,17 @@
         
         <!--Pass Record-->
         <!-- <Label Text="{Binding Complete}" Grid.Row="1" /> -->
-        <Button Text="{Binding Complete}" Command="{Binding CompleteB}" Grid.Row="1" BackgroundColor="Green"/>
+        <Button Text="{Binding Complete, StringFormat='{0}'} " Command="{Binding CompleteB}" Grid.Row="1" BackgroundColor="Green" />
 
         <!--Fail Label-->
         <Label Text="Failed" FontSize="Medium" Grid.Column="1" />
         <!--Fail Record-->
-        <Button Text="{Binding Failed}" Grid.Row="1" Grid.Column="1" Command="{Binding FailedB}" BackgroundColor="Red"/>
+        <Button Text="{Binding Failed , StringFormat='{0}'} " Grid.Row="1" Grid.Column="1" Command="{Binding FailedB}" BackgroundColor="Red"/>
 
         <!--Cancelled/Delete Label-->
         <Label Text="Deleted/Cancelled" FontSize="Medium" Grid.Column="2"/>
         <!--Delete Record-->
-        <Button Text="{Binding Deleted}" Grid.Row="1" Grid.Column="2" Command="{Binding DeletedB}" BackgroundColor="OrangeRed"/>
+        <Button Text="{Binding Deleted, StringFormat='{0}'} " Grid.Row="1" Grid.Column="2" Command="{Binding DeletedB}" BackgroundColor="OrangeRed"/>
 
         <!--Progress Message -->
         <Label Text="{Binding Message}"  Grid.Row = "2"  Grid.ColumnSpan="3" FontSize="Medium" FontAttributes="Bold"/>
