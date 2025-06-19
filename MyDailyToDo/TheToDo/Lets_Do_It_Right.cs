@@ -77,8 +77,8 @@ namespace MyDailyToDo.TheToDo
             Add = new Command(AddExecute);
             //DATE = new Command(DisplayDate);
             TheDeadLine();
-            LastOpened();
             LoadProgress();
+            LastOpened();
             //StartTwentySecondCheck();
         }
 
