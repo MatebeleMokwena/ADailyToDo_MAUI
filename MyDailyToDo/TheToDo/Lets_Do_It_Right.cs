@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace MyDailyToDo.TheToDo
 {
-   public class Lets_Do_It_Right : ObservableObject
+    public class Lets_Do_It_Right : ObservableObject
     {
         public ObservableCollection<ToDoItems> Items { get; set; } = new();
         private System.Timers.Timer endofday;
@@ -12,21 +12,21 @@ namespace MyDailyToDo.TheToDo
         readonly string lastOpenedPath = Path.Combine(FileSystem.AppDataDirectory, "last_opened.txt");
 
         string? activity;
-        public string? Activity 
+        public string? Activity
         {
             get => activity;
-            set 
-           {
+            set
+            {
                 SetProperty(ref activity, value);
                 OnPropertyChanged(nameof(Activity));
             }
         }
 
         DateTime date = DateTime.Now;
-        public DateTime Date 
+        public DateTime Date
         {
             get => date;
-            set 
+            set
             {
                 SetProperty(ref date, value);
                 OnPropertyChanged(nameof(Date));
@@ -35,10 +35,10 @@ namespace MyDailyToDo.TheToDo
 
         //Increment on complete
         int? complete = 0;
-        public int? Complete 
+        public int? Complete
         {
             get => complete;
-            set 
+            set
             {
                 SetProperty(ref complete, value);
                 OnPropertyChanged(nameof(Complete));
@@ -69,17 +69,18 @@ namespace MyDailyToDo.TheToDo
             }
         }
 
-        public Command Add   { get; set; }
+        public Command Add { get; set; }
         //public Command DATE  { get; set; }
 
         public Lets_Do_It_Right()//////////////////////////
         {
             Add = new Command(AddExecute);
             //DATE = new Command(DisplayDate);
-            TheDeadLine();
             LoadProgress();
-            LastOpened();
-            //StartTwentySecondCheck();
+            TheDeadLine();
+
+            //LastOpened();
+            StartTaskMonitoring();
         }
 
         public void AddExecute() /////////////////////////////////////////
@@ -88,9 +89,9 @@ namespace MyDailyToDo.TheToDo
             The purpose it has is to take the item in the entry and input it into the list
              */
 
-            if (!string.IsNullOrWhiteSpace(activity)) 
+            if (!string.IsNullOrWhiteSpace(activity))
             {
-                var items = new ToDoItems { label = activity , DeadLine = date  };
+                var items = new ToDoItems { label = activity, DeadLine = date };
                 Items.Add(items);
                 activity = "";
 
@@ -102,7 +103,7 @@ namespace MyDailyToDo.TheToDo
             DateTime now = DateTime.Now;
             DateTime scheduledTime = new DateTime(now.Year, now.Month, now.Day, 0, 1, 0);
             scheduledTime.AddDays(1);
-            double msUntilDeadline = 10000; //(scheduledTime - now).TotalMilliseconds;
+            double msUntilDeadline = ( now - scheduledTime).TotalMilliseconds;
 
             if (endofday != null)
             {
@@ -115,7 +116,7 @@ namespace MyDailyToDo.TheToDo
             endofday.Elapsed += OnDeadLine;
             endofday.Start();
         }
-        
+
         public void SaveProgress()//////////////////////////////////////
         {
             var data = new ProgressData
@@ -128,13 +129,13 @@ namespace MyDailyToDo.TheToDo
             string json = JsonConvert.SerializeObject(data);
             File.WriteAllText(savePath, json);
         }
-      
+
         private void OnDeadLine(object? sender, System.Timers.ElapsedEventArgs e)////////////////////////////////////////
         {
             List<int> indexes = [];
             for (int i = 0; i < Items.Count; i++)
             {
-               
+
                 if (!Items[i].isComplete)
                 {
                     Items[i].isFailed = true;
@@ -145,7 +146,7 @@ namespace MyDailyToDo.TheToDo
                 }
                 indexes.Add(i);
 
-                
+
             }
 
             App.Current!.Dispatcher.Dispatch(() =>
@@ -162,17 +163,73 @@ namespace MyDailyToDo.TheToDo
                     Items.RemoveAt(idx);
                 }
             });
-            
+
             SaveProgress();
             TheDeadLine();
         }
 
-        public void LastOpened() ////////////////////////////////////////////
+        //public void LastOpened() ////////////////////////////////////////////
+        //{
+        //    //Will check when the app was last opened then compile the outstanding activities and do necessary incrementaion
+        //    DateTime today = DateTime.Today;
+        //    DateTime lastOpened = today;
+
+        //    if (File.Exists(lastOpenedPath))
+        //    {
+        //        string content = File.ReadAllText(lastOpenedPath);
+        //        if (DateTime.TryParse(content, out DateTime parsedDate))
+        //            lastOpened = parsedDate;
+        //    }
+
+        //    int missedDays = (today - lastOpened).Days;
+
+        //    if (missedDays > 0)
+        //    {
+        //        for (int d = 0; d < missedDays; d++)
+        //        {
+        //            if (Items.Count > 0)
+        //            {
+        //                foreach (var item in Items)
+        //                {
+        //                    if (!item.isComplete)
+        //                    {
+        //                        item.isFailed = true;
+        //                        Failed++;
+        //                    }
+        //                }
+        //                Items.Clear();
+        //            }
+        //            else
+        //            {
+        //                Failed++;
+        //            }
+
+        //        }
+        //    }
+        //    //File.WriteAllText(lastOpenedPath,today.ToString("yyyy-mm-dd"));
+        //    SaveProgress();
+
+        //}
+
+        public void LoadProgress()/////////////////////////////////
         {
-            //Will check when the app was last opened then compile the outstanding activities and do necessary incrementaion
+            if (File.Exists(savePath))
+            {
+                string json = File.ReadAllText(savePath);
+                var data = JsonConvert.DeserializeObject<ProgressData>(json);
+
+                Complete = data?.Complete ?? 0;
+                Failed = data?.Failed ?? 0;
+                Deleted = data?.Deleted ?? 0;
+            }
+        }
+
+        public void StartTaskMonitoring()
+        {
             DateTime today = DateTime.Today;
             DateTime lastOpened = today;
 
+            // Try loading last opened date
             if (File.Exists(lastOpenedPath))
             {
                 string content = File.ReadAllText(lastOpenedPath);
@@ -182,6 +239,7 @@ namespace MyDailyToDo.TheToDo
 
             int missedDays = (today - lastOpened).Days;
 
+            // Process missed days
             if (missedDays > 0)
             {
                 for (int d = 0; d < missedDays; d++)
@@ -202,71 +260,56 @@ namespace MyDailyToDo.TheToDo
                     {
                         Failed++;
                     }
-
                 }
             }
-            //File.WriteAllText(lastOpenedPath,today.ToString("yyyy-mm-dd"));
+
+            // Update last opened timestamp
+            File.WriteAllText(lastOpenedPath, today.ToString("yyyy-MM-dd"));
             SaveProgress();
 
+            // Start repeating 10-second timer
+            endofday = new System.Timers.Timer(30000); // 30 seconds/////////////
+            endofday.Elapsed += OnIntervalElapsed;
+            endofday.AutoReset = true;
+            endofday.Start();
         }
 
-        public void LoadProgress()/////////////////////////////////
+        private void OnIntervalElapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
-            if (File.Exists(savePath))
+            App.Current!.Dispatcher.Dispatch(() =>
             {
-                string json = File.ReadAllText(savePath);
-                var data = JsonConvert.DeserializeObject<ProgressData>(json);
+                if (Items.Count > 0)
+                {
+                    foreach (var item in Items)
+                    {
+                        if (!item.isComplete)
+                        {
+                            item.isFailed = true;
+                            Failed++;
+                        }
+                    }
+                    Items.Clear();
+                }
+                else
+                {
+                    Failed++;
+                }
 
-                Complete = data?.Complete ?? 0;
-                Failed = data?.Failed ?? 0;
-                Deleted = data?.Deleted ?? 0;
-            }
+                SaveProgress();
+            });
         }
+    } 
 
-        //public void StartTwentySecondCheck()///////////////////////
-        //{
-        //    endofday = new System.Timers.Timer(10000); // 20 seconds
-        //    endofday.Elapsed += OnTwentySecondElapsed;
-        //    endofday.AutoReset = true;
-        //    endofday.Start();
-        //}
-
-        //private void OnTwentySecondElapsed(object? sender, System.Timers.ElapsedEventArgs e)//////////////////
-        //{
-        //    App.Current!.Dispatcher.Dispatch(() =>
-        //    {
-        //        if (Items.Count > 0)
-        //        {
-        //            foreach (var item in Items)
-        //            {
-        //                if (!item.isComplete)
-        //                {
-        //                    item.isFailed = true;
-        //                    Failed++;
-        //                }
-        //            }
-        //            Items.Clear();
-        //        }
-        //        else
-        //        {
-        //            Failed++;
-        //        }
-
-        //        SaveProgress();
-        //    });
-        //}
-    }
-
-    public class ToDoItems ////////////////////////
+        public class ToDoItems ////////////////////////
     {
-  
-         public string? label { get; set; }
-         public DateTime DeadLine { get; set; }
-         public Command TickCommand { get; set; }
-         //public Command CrossCommand { get; set; }
-         public Command DeleteCommand { get; set; }
-         public bool isFailed { get; set; } = true;
-         public bool isComplete { get; set; } = false;
+
+        public string? label { get; set; }
+        public DateTime DeadLine { get; set; }
+        public Command TickCommand { get; set; }
+        //public Command CrossCommand { get; set; }
+        public Command DeleteCommand { get; set; }
+        public bool isFailed { get; set; } = true;
+        public bool isComplete { get; set; } = false;
 
 
 
@@ -275,10 +318,10 @@ namespace MyDailyToDo.TheToDo
         {
             DeleteCommand = new Command(DeleteCommandExecute);
             TickCommand = new Command(TickCommandExecute);
-            
+
             // Add method to check when last was the application opened 
             //SO that it increments to fail if nothing was do during a certain day/s
-            
+
         }
 
         public void TickCommandExecute()/////////////////////
@@ -295,7 +338,7 @@ namespace MyDailyToDo.TheToDo
 
 
         }
-      
+
         public void DeleteCommandExecute() /////////////////////
         {
             App.LDIR_VM!.Deleted++;
