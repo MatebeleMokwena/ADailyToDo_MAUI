@@ -268,6 +268,15 @@ namespace MyDailyToDo.TheToDo
          public bool isFailed { get; set; } = true;
          public bool isComplete { get; set; } = false;
 
+         public bool isComplete 
+         { 
+             get => _isComplete; 
+             set
+             {
+                SetProperty(ref _isComplete, value);
+                OnPropertyChanged();
+             }
+         }
 
 
 
