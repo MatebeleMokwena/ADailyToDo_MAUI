@@ -1,9 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ttd="clr-namespace:MyDailyToDo.TheToDo"
              x:Class="MyDailyToDo.MainPage"
              >
 
+    <ContentPage.Resources>
+        <ttd:BoolToTextDecorationConverter x:Key="boolToTextDecoration" />
+    </ContentPage.Resources>
     
     <Grid RowDefinitions="auto,auto,*" ColumnDefinitions="*,*,*">
        
@@ -40,7 +44,8 @@
                                 <!--Passed button-->
                                 <Button Text="✔" Command="{Binding TickCommand}" CommandParameter="{Binding label}" Margin="10" BackgroundColor="Green" Grid.Column="0"/>
                                 
-                                <Label Text="{Binding label}" FontSize="Medium" Grid.Column="1" Margin="5" VerticalOptions="Start"/>
+                                <Label Text="{Binding label}" FontSize="Medium" Grid.Column="1" Margin="5" VerticalOptions="Start" 
+                                       TextDecorations="{Binding isComplete, Converter={StaticResource boolToTextDecoration}}"/>
 
                                 <Label Text="{Binding DeadLine}" FontSize="Medium" VerticalOptions="End" Margin="5" Grid.Column="2"/>
 
